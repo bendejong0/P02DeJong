@@ -13,8 +13,6 @@ void expandState(PuzzleMove& current, priority_queue<PuzzleMove, vector<PuzzleMo
 vector<PuzzleMove> buildSolutionList(unordered_set<PuzzleMove, Hash>& closed, PuzzleMove& goal);
 
 int main() {
-	cout << "TODO: " << endl;
-	cout << "\tCheck the outputs.";
 	cout << "*** P01 Puzzle Uninformed Search - A* ***" << endl;
 	cout << "<======================================================>" << endl;
 	cout << "Enter number of rows and columns: ";
@@ -37,7 +35,7 @@ int main() {
 	}
 }
 
-// TODO: fix this heuristic...
+// takes in the start state and goal state.
 bool findSolution(const PuzzleState& start, const PuzzleState& goal) {
 	Heuristic h(goal);
 	priority_queue<PuzzleMove, vector<PuzzleMove>, Heuristic> open(h);
@@ -62,6 +60,7 @@ bool findSolution(const PuzzleState& start, const PuzzleState& goal) {
 	return false;
 }
 
+// takes in the current state, a priority queue, an unordered set, and a heuristic function which contains the goal state.
 void expandState(PuzzleMove& current, priority_queue<PuzzleMove, vector<PuzzleMove>, Heuristic>& open, unordered_set<PuzzleMove, Hash>& closed, Heuristic& h) {
 	// Down, Left, Up, Right
 
@@ -122,11 +121,15 @@ void expandState(PuzzleMove& current, priority_queue<PuzzleMove, vector<PuzzleMo
 	}
 }
 
+// takes in an unordered_set and goal state
+// takes in the goal state because otherwise we dont know where to start
+// because unordered_set does not have a "first" or "last" element.
 vector<PuzzleMove> buildSolutionList(unordered_set<PuzzleMove, Hash>& closed, PuzzleMove& goal) {
 	vector<PuzzleMove> solutionList;
 
 	PuzzleMove current = goal;
 
+	// find the previous node by hashing the parent
 	while (current.getMoveName() != nullMove) {
 		solutionList.push_back(current);
 
@@ -136,17 +139,17 @@ vector<PuzzleMove> buildSolutionList(unordered_set<PuzzleMove, Hash>& closed, Pu
 		PuzzleMove key(parentState, PuzzleState(), nullMove);
 
 		auto it = closed.find(key);
-		if (it == closed.end()) break; // safety check
+		if (it == closed.end()) break; // safety
 
 		current = *it;
 	}
 	solutionList.push_back(current); // add the start state
 
-	// MIGHT BE BAD
-	//reverse(solutionList.begin(), solutionList.end());
 	return solutionList;
 }
 
+// takes in an unordered_set, goal state
+// needs the goal state because it has to pass it to buildSolutionList
 void printSolution(unordered_set<PuzzleMove, Hash>& closed, PuzzleMove& goal) {
 	vector<PuzzleMove> solution;
 	int nodesExpanded = closed.size()-1;

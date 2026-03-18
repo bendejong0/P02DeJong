@@ -23,7 +23,7 @@ public:
 
 	const PuzzleState& getParent() const { return parent; }
 
-	// I added this because otherwise microsoft gets mad
+	// I added this because MSVC requires a const PuzzleMove for unordered_set
 	bool operator==(const PuzzleMove& rhs) const { return state == rhs.state; }
 
 	MoveType getMoveName() { return move; }
