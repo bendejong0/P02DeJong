@@ -8,8 +8,9 @@
 #include <unordered_set>
 
 bool findSolution(const PuzzleState& start, const PuzzleState& goal);
-void printSolution(unordered_set<PuzzleMove, Hash>& closed);
+void printSolution(unordered_set<PuzzleMove, Hash>& closed, PuzzleMove& goal);
 void expandState(PuzzleMove& current, priority_queue<PuzzleMove, vector<PuzzleMove>, Heuristic>& open, unordered_set<PuzzleMove, Hash>& closed, Heuristic& h);
+vector<PuzzleMove> buildSolutionList(unordered_set<PuzzleMove, Hash>& closed, PuzzleMove& goal);
 
 int main() {
 	cout << "TODO: " << endl;
@@ -49,7 +50,7 @@ bool findSolution(const PuzzleState& start, const PuzzleState& goal) {
 		open.pop();
 		if (current.getState() == goal) {
 			closed.insert(current);
-			printSolution(closed, goal);
+			printSolution(closed, current);
 			return true;
 		}
 		else {
@@ -61,7 +62,7 @@ bool findSolution(const PuzzleState& start, const PuzzleState& goal) {
 	return false;
 }
 
-void expandState(PuzzleMove& current, priority_queue<PuzzleMove, vector<PuzzleMove>, Heuristic>& open, unordered_set<PuzzleState, Hash>& closed, Heuristic& h) {
+void expandState(PuzzleMove& current, priority_queue<PuzzleMove, vector<PuzzleMove>, Heuristic>& open, unordered_set<PuzzleMove, Hash>& closed, Heuristic& h) {
 	// Down, Left, Up, Right
 
 	auto moveBlank = [&current](MoveType direction) {
@@ -84,7 +85,8 @@ void expandState(PuzzleMove& current, priority_queue<PuzzleMove, vector<PuzzleMo
 	if (current.getState().canMoveDown()) {
 		PuzzleState temp = moveBlank(MoveType::down);
 		// if it's not in the closed list,
-		if (closed.find(temp) == closed.end()) {
+		PuzzleMove key(temp, PuzzleState(), nullMove);
+		if (closed.find(key) == closed.end()) {
 			// add it to the open list
 			open.push(PuzzleMove(temp, current.getState(), MoveType::down, current.getCost()+1, h(temp)));
 		}
@@ -92,7 +94,8 @@ void expandState(PuzzleMove& current, priority_queue<PuzzleMove, vector<PuzzleMo
 	if (current.getState().canMoveLeft()) {
 		PuzzleState temp = moveBlank(MoveType::left);
 		// if it's not in the closed list,
-		if (closed.find(temp) == closed.end()) {
+		PuzzleMove key(temp, PuzzleState(), nullMove);
+		if (closed.find(key) == closed.end()) {
 			// add it to the open list
 			open.push(PuzzleMove(temp, current.getState(), MoveType::left, current.getCost() + 1, h(temp)));
 		}
@@ -100,7 +103,8 @@ void expandState(PuzzleMove& current, priority_queue<PuzzleMove, vector<PuzzleMo
 	if (current.getState().canMoveUp()) {
 		PuzzleState temp = moveBlank(MoveType::up);
 		// if it's not in the closed list,
-		if (closed.find(temp) == closed.end()) {
+		PuzzleMove key(temp, PuzzleState(), nullMove);
+		if (closed.find(key) == closed.end()) {
 			// add it to the open list
 			open.push(PuzzleMove(temp, current.getState(), MoveType::up, current.getCost() + 1, h(temp)));
 		}
@@ -108,7 +112,8 @@ void expandState(PuzzleMove& current, priority_queue<PuzzleMove, vector<PuzzleMo
 	if (current.getState().canMoveRight()) {
 		PuzzleState temp = moveBlank(MoveType::right);
 		// if it's not in the closed list,
-		if (closed.find(temp) == closed.end()) {
+		PuzzleMove key(temp, PuzzleState(), nullMove);
+		if (closed.find(key) == closed.end()) {
 			// compute the heuristic value of the state
 			PuzzleMove tempMove(temp, current.getState(), MoveType::right, current.getCost() + 1, h(temp));
 			// add it to the open list
@@ -119,16 +124,27 @@ void expandState(PuzzleMove& current, priority_queue<PuzzleMove, vector<PuzzleMo
 
 vector<PuzzleMove> buildSolutionList(unordered_set<PuzzleMove, Hash>& closed, PuzzleMove& goal) {
 	vector<PuzzleMove> solutionList;
-	// while current node has a parent node,
-	// hash the parent,
-	// the parent became the new current node
-	Hash h;
+
 	PuzzleMove current = goal;
+
 	while (current.getMoveName() != nullMove) {
-		PuzzleState next = current.getParent();
-		int nextKey = h(next);
-		next = closed.find(nextKey);
+		solutionList.push_back(current);
+
+		PuzzleState parentState = current.getParent();
+
+		// dummy key, only state matters
+		PuzzleMove key(parentState, PuzzleState(), nullMove);
+
+		auto it = closed.find(key);
+		if (it == closed.end()) break; // safety check
+
+		current = *it;
 	}
+	solutionList.push_back(current); // add the start state
+
+	// MIGHT BE BAD
+	//reverse(solutionList.begin(), solutionList.end());
+	return solutionList;
 }
 
 void printSolution(unordered_set<PuzzleMove, Hash>& closed, PuzzleMove& goal) {

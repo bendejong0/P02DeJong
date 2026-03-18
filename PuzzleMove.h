@@ -18,6 +18,14 @@ public:
 
 	PuzzleState & getParent() { return parent; }
 
+	// I added these two because unordered_set NEEDS a const.
+	const PuzzleState& getState() const { return state; }
+
+	const PuzzleState& getParent() const { return parent; }
+
+	// I added this because otherwise microsoft gets mad
+	bool operator==(const PuzzleMove& rhs) const { return state == rhs.state; }
+
 	MoveType getMoveName() { return move; }
 
 	int getCost() const { return cost; }
